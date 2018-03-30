@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Created-By: Apache Maven
+Built-By: VinYarD
+Build-Jdk: 1.8.0_161
+Main-Class: istic.ia.tp3.App
+
