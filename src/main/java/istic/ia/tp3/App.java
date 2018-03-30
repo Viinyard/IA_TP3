@@ -2,6 +2,8 @@ package istic.ia.tp3;
 
 import ca.pfv.spmf.algorithms.frequentpatterns.lcm.AlgoLCM;
 import ca.pfv.spmf.algorithms.frequentpatterns.lcm.Dataset;
+import ca.pfv.spmf.algorithms.sequential_rules.rulegrowth.AlgoERMiner;
+import ca.pfv.spmf.algorithms.sequential_rules.rulegrowth.AlgoRULEGROWTH;
 import ca.pfv.spmf.algorithms.sequentialpatterns.clospan_AGP.AlgoCloSpan;
 import ca.pfv.spmf.algorithms.sequentialpatterns.clospan_AGP.items.SequenceDatabase;
 import ca.pfv.spmf.algorithms.sequentialpatterns.clospan_AGP.items.creators.AbstractionCreator;
@@ -44,19 +46,19 @@ public class App {
 
 
         {
-            Option option = new Option("s", "source", true, "source file, defaut : console");
+            Option option = new Option("s", "source", true, "source file, required");
             option.setRequired(true);
             options.addOption(option);
         }
 
         {
-            Option option = new Option("o", "output", true, "output file, default : console");
+            Option option = new Option("o", "output", true, "output file, default : output.txt");
             option.setRequired(false);
             options.addOption(option);
         }
 
         {
-            Option option = new Option("m", "method", true, "method to use, must be one of A or B");
+            Option option = new Option("m", "method", true, "method to use, must be one of : \n- A : LCM \n- B : CloSpan\n- C : ERMiner\n- D : RuleGrowth");
             option.setRequired(true);
             option.setArgs(1);
             options.addOption(option);
@@ -70,14 +72,14 @@ public class App {
         }
 
         {
-            Option option = new Option("p", "pattern", true, "Max Pattern Length, default 4");
+            Option option = new Option("r", "result", true, "Result of the computation algorithm, default : result.txt");
             option.setRequired(false);
             option.setArgs(1);
             options.addOption(option);
         }
 
         {
-            Option option = new Option("r", "result", true, "Result of the computation algorithm, default : result.txt");
+            Option option = new Option("c", "conf", true,  "minconf, default 50");
             option.setRequired(false);
             option.setArgs(1);
             options.addOption(option);
@@ -97,7 +99,7 @@ public class App {
 
             if (cmd.hasOption("help")) {
                 HelpFormatter helpFormatter = new HelpFormatter();
-                helpFormatter.printHelp("[-h] | -m <method> [-s <files>] [-o file]", options);
+                helpFormatter.printHelp("[-h] | -m <method> -s <files> [-o <file>] [-r <file>] [-f]", options);
                 System.exit(0);
             } else {
                 cmd = parser.parse(options, args);
@@ -112,6 +114,7 @@ public class App {
                 }
                 String[] files_name = cmd.getOptionValues("s");
 
+
                 inputs = new InputStreamReader[files_name.length];
 
                 for (int i = 0; i < inputs.length; i++) {
@@ -125,9 +128,10 @@ public class App {
                 method = cmd.getOptionValue("m");
 
 
-                int minsup_percent = Integer.parseInt(cmd.getOptionValue("t"));
-                float minsup = minsup_percent / 100.0f;
 
+
+                int minsup = Integer.parseInt(cmd.getOptionValue("t"));
+                int minconf = Integer.parseInt(cmd.getOptionValue("c", "40"));
                 boolean fullname = cmd.hasOption("fullname");
 
                 CardMap map = new CardMap();
@@ -148,8 +152,14 @@ public class App {
                     case "B":
                         CloSpan(map, minsup, fullname);
                         break;
+                    case "C" :
+                        ERMiner(map, minsup, minconf, fullname);
+                        break;
+                    case "D" :
+                        RuleGrowth(map, minsup, minconf, fullname);
+                        break;
                     default:
-                        throw new IllegalArgumentException("Method " + method + " does not exists, please choose one between A or B");
+                        throw new IllegalArgumentException("Method " + method + " does not exists, please choose one between A, B, C or D");
                 }
 
             }
@@ -158,7 +168,86 @@ public class App {
         }
     }
 
-    private static void CloSpan(CardMap map, float minsup, boolean fullname) {
+    private static void RuleGrowth(CardMap map, int minsup, int minconf, boolean fullname) {
+        AlgoRULEGROWTH algo = new AlgoRULEGROWTH();
+
+        try {
+            algo.runAlgorithm(minsup / 100.0, minconf / 100.0, output_file.toString(), result_file.toString());
+
+            algo.printStats();
+
+
+            if(fullname) reverseSeq(map);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private static void reverseSeq(CardMap map) throws IOException {
+        StringBuilder builder = new StringBuilder();
+
+            BufferedReader br = new BufferedReader(new FileReader(result_file));
+
+            String line = null;
+            while((line = br.readLine()) != null) {
+                String[] cline = line.split("#");
+                cline[0] = cline[0].replaceAll(" ", "");
+                String[] seq = cline[0].split("==>");
+
+                {
+                    String[] cdv = seq[0].split(",");
+
+                    for (String ca : cdv) {
+                        builder.append(map.reverse(Integer.valueOf(ca)).getName() + ", ");
+                    }
+                }
+                builder.append("==> ");
+
+                {
+                    String[] cdv = seq[1].split(",");
+
+                    for (String ca : cdv) {
+                        builder.append(map.reverse(Integer.valueOf(ca)).getName() + ", ");
+                    }
+                }
+
+
+                for(int i = 1; i < cline.length; i++) {
+                    builder.append("#"+cline[i]);
+                }
+
+                builder.append("\n");
+
+            }
+
+            br.close();
+
+
+            PrintWriter pr = new PrintWriter(result_file);
+
+            pr.append(builder.toString());
+
+            pr.flush();
+            pr.close();
+
+    }
+
+    private static void ERMiner(CardMap map, int minsup, int minconf, boolean fullname) {
+        AlgoERMiner algo = new AlgoERMiner();
+
+        try {
+            algo.runAlgorithm(minsup / 100.0, minconf / 100.0, output_file.toString(), result_file.toString());
+
+            algo.printStats();
+            if(fullname) reverseSeq(map);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void CloSpan(CardMap map, int minsup, boolean fullname) {
 
         boolean keepPatterns = true;
         boolean verbose = true;
@@ -172,9 +261,9 @@ public class App {
         SequenceDatabase sequenceDatabase = new SequenceDatabase();
 
         try {
-            sequenceDatabase.loadFile(output_file.toString(), minsup);
+            sequenceDatabase.loadFile(output_file.toString(), minsup / 100.0);
 
-            AlgoCloSpan algorithm = new AlgoCloSpan(minsup, abstractionCreator, findClosedPatterns, executePruningMethods);
+            AlgoCloSpan algorithm = new AlgoCloSpan(minsup / 100.0, abstractionCreator, findClosedPatterns, executePruningMethods);
 
             algorithm.runAlgorithm(sequenceDatabase, keepPatterns, verbose, result_file.toString(), outputSequenceIdentifiers);
             System.out.println(algorithm.getNumberOfFrequentPatterns() + " pattern found.");
@@ -231,13 +320,13 @@ public class App {
     }
 
 
-    private static void LLCM(CardMap map, float minsup, boolean fullname) {
+    private static void LLCM(CardMap map, int minsup, boolean fullname) {
         Dataset dataset = null;
         try {
             dataset = new Dataset(output_file.toString());
 
             AlgoLCM algo = new AlgoLCM();
-            Itemsets itemsets = algo.runAlgorithm(minsup, dataset, null);
+            Itemsets itemsets = algo.runAlgorithm(minsup / 100.0, dataset, null);
             algo.printStats();
 
             try (PrintWriter pw = new PrintWriter(new FileOutputStream(result_file))) {
@@ -350,12 +439,14 @@ public class App {
                     case "A":
                         ret.append(methodA(map, br));
                         break;
-                    case "B":
+                    case "B" :
+                    case "C" :
+                    case "D" :
                         ret.append(methodB(map, br));
                         break;
 
                     default:
-                        throw new IllegalArgumentException("Method " + method + " does not exists, please choose one between A or B");
+                        throw new IllegalArgumentException("Method " + method + " does not exists, please choose one between A, B, C or D");
                 }
             } catch (IOException e) {
                 e.printStackTrace();

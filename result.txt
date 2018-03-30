@@ -1,30 +1,10 @@
-TheCoin, #SUP: 165
-TheCoin, LesserHeal, #SUP: 40
-TheCoin, Dr.Boom, #SUP: 59
-TheCoin, Fireblast, #SUP: 46
-TheCoin, AzureDrake, #SUP: 49
-TheCoin, SludgeBelcher, #SUP: 46
-TheCoin, HauntedCreeper, #SUP: 35
-TheCoin, PilotedShredder, #SUP: 68
-Fireblast, #SUP: 63
-Fireblast, Fireblast, #SUP: 42
-PilotedShredder, #SUP: 90
-PilotedShredder, Dr.Boom, #SUP: 37
-PilotedShredder, PilotedShredder, #SUP: 39
-Frostbolt, #SUP: 44
-Dr.Boom, #SUP: 70
-NorthshireCleric, #SUP: 39
-LesserHeal, #SUP: 54
-LesserHeal, LesserHeal, #SUP: 41
-KnifeJuggler, #SUP: 50
-AzureDrake, #SUP: 63
-Loatheb, #SUP: 37
-LifeTap, #SUP: 41
-HauntedCreeper, #SUP: 52
-AntiqueHealbot, #SUP: 38
-IronbeakOwl, #SUP: 36
-MadScientist, #SUP: 52
-SteadyShot, #SUP: 40
-DefenderofArgus, #SUP: 36
-SludgeBelcher, #SUP: 53
-Shapeshift, #SUP: 44
+ManaWyrm, ==> Fireblast, #SUP: 34 #CONF: 0.918918918918919
+TheCoin, ==> AzureDrake, #SUP: 55 #CONF: 0.3021978021978022
+Frostbolt, ==> Fireblast, #SUP: 34 #CONF: 0.6181818181818182
+PowerWord:Shield, ==> LesserHeal, #SUP: 32 #CONF: 0.8421052631578947
+TheCoin, ==> Dr.Boom, #SUP: 62 #CONF: 0.34065934065934067
+TheCoin, ==> PilotedShredder, #SUP: 86 #CONF: 0.4725274725274725
+Shapeshift, ==> PilotedShredder, #SUP: 32 #CONF: 0.5818181818181818
+PilotedShredder, ==> Dr.Boom, #SUP: 36 #CONF: 0.3185840707964602
+HauntedCreeper, ==> PilotedShredder, #SUP: 40 #CONF: 0.5797101449275363
+TheCoin, HauntedCreeper, ==> PilotedShredder, #SUP: 33 #CONF: 0.5409836065573771
